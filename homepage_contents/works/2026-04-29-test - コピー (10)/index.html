@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ARCANADEのブログ、制作物、ミニゲームを掲載する公式ホームページです。">
+    <title>ARCANADE</title>
+    <base href="../../">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2327302f'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Arial,sans-serif' font-size='34' font-weight='700' fill='white'%3EA%3C/text%3E%3C/svg%3E">
+    <link rel="preload" as="image" href="assets/hero-arcanade.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <nav class="side-nav" aria-label="メインナビゲーション">
+        <a class="brand" href="./" data-nav="home" aria-label="ARCANADE トップ">
+          <span class="brand-mark">A</span>
+          <span class="brand-text">ARCANADE</span>
+        </a>
+        <div class="nav-links">
+          <button class="nav-link" type="button" data-nav="home" aria-label="トップ">
+            <span class="nav-icon">⌂</span>
+            <span>トップ</span>
+          </button>
+          <button class="nav-link" type="button" data-nav="blog" aria-label="ブログ">
+            <span class="nav-icon">▤</span>
+            <span>ブログ</span>
+          </button>
+          <button class="nav-link is-active" type="button" data-nav="works" aria-label="制作物">
+            <span class="nav-icon">▶</span>
+            <span>制作物</span>
+          </button>
+          <button class="nav-link" type="button" data-nav="games" aria-label="ミニゲーム">
+            <span class="nav-icon">▦</span>
+            <span>ゲーム</span>
+          </button>
+          <button class="nav-link" type="button" data-nav="contact" aria-label="コンタクト">
+            <span class="nav-icon">✉</span>
+            <span>連絡</span>
+          </button>
+        </div>
+      </nav>
+
+      <main class="site-main" id="main">
+        <section class="view" id="home-view" data-view="home" aria-labelledby="home-title">
+          <div class="hero">
+            <img class="hero-image" src="assets/hero-arcanade.png" alt="デジタル作品の制作環境を表したビジュアル">
+            <div class="hero-copy">
+              <p class="eyebrow">Creative archive and digital works</p>
+              <h1 id="home-title">ARCANADE</h1>
+              <p class="hero-lead">制作記録、映像作品、WebGLミニゲームをまとめた創作拠点です。読み物から遊べる作品まで、更新順と反応の多い順で探せます。</p>
+              <div class="hero-actions">
+                <button class="button primary" type="button" data-nav="works">制作物を見る</button>
+                <button class="button ghost" type="button" data-nav="contact">連絡する</button>
+              </div>
+            </div>
+          </div>
+
+          <section class="content-band" aria-labelledby="home-blog-title">
+            <div class="section-heading">
+              <p class="eyebrow">Blog</p>
+              <h2 id="home-blog-title">ブログ</h2>
+              <button class="button text" type="button" data-nav="blog">一覧へ</button>
+            </div>
+            <div class="feature-grid" id="home-blog-list"></div>
+          </section>
+
+          <section class="content-band muted" aria-labelledby="home-work-title">
+            <div class="section-heading">
+              <p class="eyebrow">Works</p>
+              <h2 id="home-work-title">制作物</h2>
+              <button class="button text" type="button" data-nav="works">一覧へ</button>
+            </div>
+            <div class="work-strip" id="home-work-list"></div>
+          </section>
+
+          <section class="content-band" aria-labelledby="home-game-title">
+            <div class="section-heading">
+              <p class="eyebrow">Mini Games</p>
+              <h2 id="home-game-title">ミニゲーム</h2>
+              <button class="button text" type="button" data-nav="games">一覧へ</button>
+            </div>
+            <div class="feature-grid compact" id="home-game-list"></div>
+          </section>
+
+          <section class="content-band contact-preview" aria-labelledby="home-contact-title">
+            <div>
+              <p class="eyebrow">Contact</p>
+              <h2 id="home-contact-title">制作の感想や依頼相談はこちらへ</h2>
+              <p>X、メール、お問い合わせフォームから連絡できます。</p>
+            </div>
+            <button class="button primary" type="button" data-nav="contact">コンタクトへ</button>
+          </section>
+        </section>
+
+        <section class="view" id="blog-view" data-view="blog" aria-labelledby="blog-title">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Blog</p>
+              <h1 id="blog-title">ブログ</h1>
+            </div>
+          </div>
+          <div id="blog-list-view">
+            <div class="toolbar">
+              <label class="search-field">
+                <span>検索</span>
+                <input id="blog-search" type="search" placeholder="タイトルや概要">
+              </label>
+              <div class="segmented" role="group" aria-label="ブログの並び替え">
+                <button class="is-active" type="button" data-blog-sort="updated">最新</button>
+                <button type="button" data-blog-sort="popular">人気</button>
+              </div>
+            </div>
+            <div class="card-grid" id="blog-list"></div>
+            <div class="pager" id="blog-pager"></div>
+          </div>
+          <article class="detail-view" id="blog-detail-view" hidden></article>
+        </section>
+
+        <section class="view is-current" id="works-view" data-view="works" aria-labelledby="works-title">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Works</p>
+              <h1 id="works-title">制作物</h1>
+            </div>
+          </div>
+          <div id="work-list-view" hidden>
+            <div class="toolbar">
+              <label class="search-field">
+                <span>検索</span>
+                <input id="work-search" type="search" placeholder="作品名や概要">
+              </label>
+              <div class="segmented" role="group" aria-label="制作物の並び替え">
+                <button class="is-active" type="button" data-work-sort="updated">最新</button>
+                <button type="button" data-work-sort="popular">人気</button>
+              </div>
+            </div>
+            <div class="work-list" id="work-list"></div>
+            <div class="pager" id="work-pager"></div>
+          </div>
+          <article class="work-detail" id="work-detail-view">
+            <div data-static-detail="work" data-static-id="2026-04-29-test - コピー (10)">
+              <a class="button back-button" href="works/">一覧に戻る</a>
+              <div class="work-detail-grid">
+                <section>
+                  <div class="meta-row">
+                    <span>2026/04/29</span>
+                    <span data-counter-kind="works" data-counter-id="2026-04-29-test - コピー (10)" data-counter-metric="pv">940 PV</span>
+                  </div>
+                  <h1>Digital Showcase Reel</h1>
+                  <p class="article-body">作品の説明と視聴エリアを左右に分け、画像と動画を切り替えながら確認できます。動画URLは生成ツール側で埋め込みURLへ変換されます。</p>
+                  <div class="detail-actions">
+                    <button class="like-button" type="button" data-like="2026-04-29-test - コピー (10)">いいね 63</button>
+                    <button class="share-button" type="button" data-share="works/2026-04-29-test - コピー (10)/" data-title="Digital Showcase Reel">共有</button>
+                  </div>
+                </section>
+                <section>
+                  <div class="media-frame" id="active-media"><img src="assets/hero-arcanade.png" alt="Main visual"></div>
+                  <div class="media-rail">
+                    
+                      <button type="button" class="is-active " data-media-index="0" data-media-type="image" data-media-src="assets/hero-arcanade.png" data-media-embed="" data-media-title="Main visual">
+                        <img class="thumb" src="assets/hero-arcanade.png" alt="Main visual">
+                      </button>
+                    
+                      <button type="button" class=" is-video" data-media-index="1" data-media-type="video" data-media-src="https://www.youtube.com/watch?v=yS-fsWrARw8&amp;list=RDyS-fsWrARw8&amp;start_radio=1&amp;pp=oAcB" data-media-embed="https://www.youtube.com/embed/yS-fsWrARw8" data-media-title="紹介動画">
+                        <img class="thumb" src="https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg" alt="紹介動画">
+                      </button>
+                    
+                      <button type="button" class=" is-video" data-media-index="2" data-media-type="video" data-media-src="https://www.youtube.com/watch?v=yS-fsWrARw8&amp;list=RDyS-fsWrARw8&amp;start_radio=1&amp;pp=oAcB" data-media-embed="https://www.youtube.com/embed/yS-fsWrARw8" data-media-title="紹介動画">
+                        <img class="thumb" src="https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg" alt="紹介動画">
+                      </button>
+                    
+                      <button type="button" class=" is-video" data-media-index="3" data-media-type="video" data-media-src="https://www.youtube.com/watch?v=yS-fsWrARw8&amp;list=RDyS-fsWrARw8&amp;start_radio=1&amp;pp=oAcB" data-media-embed="https://www.youtube.com/embed/yS-fsWrARw8" data-media-title="紹介動画">
+                        <img class="thumb" src="https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg" alt="紹介動画">
+                      </button>
+                    
+                      <button type="button" class=" is-video" data-media-index="4" data-media-type="video" data-media-src="https://www.youtube.com/watch?v=yS-fsWrARw8&amp;list=RDyS-fsWrARw8&amp;start_radio=1&amp;pp=oAcB" data-media-embed="https://www.youtube.com/embed/yS-fsWrARw8" data-media-title="紹介動画">
+                        <img class="thumb" src="https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg" alt="紹介動画">
+                      </button>
+                    
+                      <button type="button" class=" is-video" data-media-index="5" data-media-type="video" data-media-src="https://www.youtube.com/watch?v=yS-fsWrARw8&amp;list=RDyS-fsWrARw8&amp;start_radio=1&amp;pp=oAcB" data-media-embed="https://www.youtube.com/embed/yS-fsWrARw8" data-media-title="紹介動画">
+                        <img class="thumb" src="https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg" alt="紹介動画">
+                      </button>
+                    
+                      <button type="button" class=" is-video" data-media-index="6" data-media-type="video" data-media-src="https://www.youtube.com/watch?v=yS-fsWrARw8&amp;list=RDyS-fsWrARw8&amp;start_radio=1&amp;pp=oAcB" data-media-embed="https://www.youtube.com/embed/yS-fsWrARw8" data-media-title="紹介動画">
+                        <img class="thumb" src="https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg" alt="紹介動画">
+                      </button>
+                    
+                      <button type="button" class=" is-video" data-media-index="7" data-media-type="video" data-media-src="https://www.youtube.com/watch?v=yS-fsWrARw8&amp;list=RDyS-fsWrARw8&amp;start_radio=1&amp;pp=oAcB" data-media-embed="https://www.youtube.com/embed/yS-fsWrARw8" data-media-title="紹介動画">
+                        <img class="thumb" src="https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg" alt="紹介動画">
+                      </button>
+                    
+                      <button type="button" class=" is-video" data-media-index="8" data-media-type="video" data-media-src="https://www.youtube.com/watch?v=yS-fsWrARw8&amp;list=RDyS-fsWrARw8&amp;start_radio=1&amp;pp=oAcB" data-media-embed="https://www.youtube.com/embed/yS-fsWrARw8" data-media-title="紹介動画">
+                        <img class="thumb" src="https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg" alt="紹介動画">
+                      </button>
+                    
+                  </div>
+                </section>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="view" id="games-view" data-view="games" aria-labelledby="games-title">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Mini Games</p>
+              <h1 id="games-title">ミニゲーム</h1>
+            </div>
+          </div>
+          <div class="game-layout">
+            <aside class="game-list" id="game-list" aria-label="ミニゲーム一覧"></aside>
+            <article class="game-stage" id="game-stage"></article>
+          </div>
+        </section>
+
+        <section class="view" id="contact-view" data-view="contact" aria-labelledby="contact-title">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Contact</p>
+              <h1 id="contact-title">コンタクト</h1>
+            </div>
+          </div>
+          <div class="contact-layout">
+            <section class="contact-info" aria-label="連絡先">
+              <h2>ARCANADEへの連絡</h2>
+              <p>作品の感想、制作相談、コラボレーションの連絡を受け付けています。</p>
+              <dl>
+                <div>
+                  <dt>X</dt>
+                  <dd><a href="https://x.com/" target="_blank" rel="noreferrer">https://x.com/</a></dd>
+                </div>
+                <div>
+                  <dt>Mail</dt>
+                  <dd><a href="mailto:contact@example.com">contact@example.com</a></dd>
+                </div>
+              </dl>
+            </section>
+            <form class="contact-form" id="contact-form">
+              <h2>匿名での連絡フォーム</h2>
+              <label>
+                <span>件名</span>
+                <input name="subject" type="text" required autocomplete="off">
+              </label>
+              <label>
+                <span>連絡内容</span>
+                <textarea name="message" rows="8" required placeholder="作品の感想・依頼相談など"></textarea>
+              </label>
+              <button class="button primary" type="submit">送信</button>
+              <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
+      window.ARCANADE_PAGE = {"view":"works","detailType":"work","detailId":"2026-04-29-test - コピー (10)"};
+    </script>
+    <script src="app.js" defer></script>
+  </body>
+</html>

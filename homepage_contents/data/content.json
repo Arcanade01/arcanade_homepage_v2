@@ -1,0 +1,149 @@
+{
+  "site": {
+    "name": "ARCANADE",
+    "email": "contact@example.com",
+    "x": "https://x.com/"
+  },
+  "blogs": [
+    {
+      "id": "2026-04-29-first-note",
+      "title": "ARCANADEを作り直す",
+      "updatedAt": "2026-04-29T10:00:00+09:00",
+      "summary": "ブログ、制作物、ミニゲームをひとつの導線で見せるための設計メモです。",
+      "pv": 1280,
+      "likes": 84
+    },
+    {
+      "id": "2026-04-29-second-note",
+      "title": "2026-04-29-second-note",
+      "updatedAt": "2026-04-29T00:00:00+09:00",
+      "summary": "こんにちは",
+      "pv": 0,
+      "likes": 0
+    },
+    {
+      "id": "2026-03-28-website-open",
+      "title": "Webサイト開設しました！",
+      "updatedAt": "2026-03-28T00:00:00+09:00",
+      "summary": "はじめまして。 Webサイト開設しました。",
+      "pv": 0,
+      "likes": 0
+    }
+  ],
+  "works": [
+    {
+      "id": "2026-04-29-showcase",
+      "title": "Digital Showcase Reel",
+      "updatedAt": "2026-04-29T11:00:00+09:00",
+      "summary": "映像、画像、Web向けインタラクションを横断して見せるショーケースです。",
+      "description": "作品の説明と視聴エリアを左右に分け、画像と動画を切り替えながら確認できます。動画URLは生成ツール側で埋め込みURLへ変換されます。",
+      "thumbnail": "assets/hero-arcanade.png",
+      "pv": 940,
+      "likes": 63,
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/hero-arcanade.png",
+          "embedUrl": "",
+          "thumbnail": "assets/hero-arcanade.png",
+          "title": "Main visual"
+        }
+      ]
+    },
+    {
+      "id": "2026-04-29-test",
+      "title": "Digital Showcase Reel",
+      "updatedAt": "2026-04-29T11:00:00+09:00",
+      "summary": "映像、画像、Web向けインタラクションを横断して見せるショーケースです。",
+      "description": "作品の説明と視聴エリアを左右に分け、画像と動画を切り替えながら確認できます。動画URLは生成ツール側で埋め込みURLへ変換されます。",
+      "thumbnail": "assets/hero-arcanade.png",
+      "pv": 940,
+      "likes": 63,
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/hero-arcanade.png",
+          "embedUrl": "",
+          "thumbnail": "assets/hero-arcanade.png",
+          "title": "Main visual"
+        },
+        {
+          "type": "video",
+          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
+          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
+          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
+          "title": "紹介動画"
+        },
+        {
+          "type": "video",
+          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
+          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
+          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
+          "title": "紹介動画"
+        },
+        {
+          "type": "video",
+          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
+          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
+          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
+          "title": "紹介動画"
+        },
+        {
+          "type": "video",
+          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
+          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
+          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
+          "title": "紹介動画"
+        },
+        {
+          "type": "video",
+          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
+          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
+          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
+          "title": "紹介動画"
+        },
+        {
+          "type": "video",
+          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
+          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
+          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
+          "title": "紹介動画"
+        },
+        {
+          "type": "video",
+          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
+          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
+          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
+          "title": "紹介動画"
+        },
+        {
+          "type": "video",
+          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
+          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
+          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
+          "title": "紹介動画"
+        }
+      ]
+    }
+  ],
+  "games": [
+    {
+      "id": "2026-04-29-mini-lab",
+      "title": "Mini Lab",
+      "updatedAt": "2026-04-29T12:00:00+09:00",
+      "summary": "Unity WebGLの配置を想定したミニゲーム枠です。",
+      "pv": 720,
+      "likes": 41,
+      "buildUrl": "games/2026-04-29-mini-lab/build/index.html"
+    },
+    {
+      "id": "2026-04-29-siryoku",
+      "title": "視力検査",
+      "updatedAt": "2026-04-29T12:00:00+09:00",
+      "summary": "Unity WebGLの配置を想定したミニゲーム枠です。",
+      "pv": 720,
+      "likes": 41,
+      "buildUrl": "games/2026-04-29-siryoku/build/index.html"
+    }
+  ]
+}

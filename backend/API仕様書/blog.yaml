@@ -1,0 +1,431 @@
+openapi: 3.0.3
+
+info:
+  title: Blog PV and Likes API
+  version: 1.0.0
+  description: ブログ記事のPV数といいね数を取得・更新・ランキング取得するAPIです。
+
+servers:
+  - url: https://11yf40fgme.execute-api.ap-northeast-1.amazonaws.com/prd
+    description: prd stage
+
+tags:
+  - name: Blog
+    description: ブログのPV数・いいね数API
+
+paths:
+  /blog:
+    get:
+      tags:
+        - Blog
+      summary: 複数ブログのPV数・いいね数を取得
+      description: |
+        ids にカンマ区切りでブログIDを指定すると、それぞれのPV数といいね数を返します。
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          description: カンマ区切りのブログID一覧
+          schema:
+            type: string
+            example: 2026-04-29-first-note,2026-04-30-second-note,2026-04-30-third-note
+      responses:
+        "200":
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetBlogsResponse"
+              example:
+                returnedAt: "2026-04-30T07:00:00.000Z"
+                blogs:
+                  2026-04-29-first-note:
+                    pv: 123
+                    likes: 10
+                  2026-04-30-second-note:
+                    pv: 45
+                    likes: 3
+                  2026-04-30-third-note:
+                    pv: 0
+                    likes: 0
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                idsRequired:
+                  value:
+                    message: "ids is required."
+                tooManyIds:
+                  value:
+                    message: "ids must be 100 or less"
+                invalidId:
+                  value:
+                    message: "Invalid id format"
+                    invalidBlogNames:
+                      - "invalid/id"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /blog/pv:
+    post:
+      tags:
+        - Blog
+      summary: ブログのPV数を1増やす
+      description: |
+        指定したブログIDのPV数を1加算します。
+        対象IDがDynamoDB上に存在しない場合は404を返します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IdRequest"
+            example:
+              id: 2026-04-29-first-note
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CounterUpdateResponse"
+              example:
+                returnedAt: "2026-04-30T07:00:00.000Z"
+                id: 2026-04-29-first-note
+                pv: 124
+                likes: 10
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                idRequired:
+                  value:
+                    message: "id is required"
+                invalidId:
+                  value:
+                    message: "Invalid id format"
+        "404":
+          description: 指定IDが存在しない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundResponse"
+              example:
+                message: "id does not exist"
+                id: 2030-04-30-final-note
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /blog/likes:
+    post:
+      tags:
+        - Blog
+      summary: ブログのいいね数を1増やす
+      description: |
+        指定したブログIDのいいね数を1加算します。
+        対象IDがDynamoDB上に存在しない場合は404を返します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IdRequest"
+            example:
+              id: 2026-04-29-first-note
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CounterUpdateResponse"
+              example:
+                returnedAt: "2026-04-30T07:00:00.000Z"
+                id: 2026-04-29-first-note
+                pv: 124
+                likes: 11
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                idRequired:
+                  value:
+                    message: "id is required"
+                invalidId:
+                  value:
+                    message: "Invalid id format"
+        "404":
+          description: 指定IDが存在しない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundResponse"
+              example:
+                message: "id does not exist"
+                id: 2030-04-30-final-note
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /blog/sort/pv:
+    get:
+      tags:
+        - Blog
+      summary: PV数順のブログランキングを取得
+      description: |
+        PV数の降順でブログを30件ずつ取得します。
+        page=0 の場合は1〜30件目、page=1 の場合は31〜60件目を返します。
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: ページ番号。0以上の整数。
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            example: 0
+      responses:
+        "200":
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SortedBlogsResponse"
+              example:
+                returnedAt: "2026-04-30T07:00:00.000Z"
+                sort: pv
+                page: 0
+                pageSize: 30
+                hasNext: true
+                blogs:
+                  - id: 2026-04-29-first-note
+                    pv: 123
+                    likes: 10
+                  - id: 2026-04-30-second-note
+                    pv: 45
+                    likes: 3
+        "400":
+          description: page指定が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: "page must be 0 or greater integer"
+        "500":
+          description: サーバーエラー、またはPV用GSI名未設定
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                gsiNotConfigured:
+                  value:
+                    message: "pv GSI name is not configured"
+                internalError:
+                  value:
+                    message: "Internal server error"
+
+  /blog/sort/likes:
+    get:
+      tags:
+        - Blog
+      summary: いいね数順のブログランキングを取得
+      description: |
+        いいね数の降順でブログを30件ずつ取得します。
+        page=0 の場合は1〜30件目、page=1 の場合は31〜60件目を返します。
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: ページ番号。0以上の整数。
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            example: 0
+      responses:
+        "200":
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SortedBlogsResponse"
+              example:
+                returnedAt: "2026-04-30T07:00:00.000Z"
+                sort: likes
+                page: 0
+                pageSize: 30
+                hasNext: true
+                blogs:
+                  - id: 2026-04-30-third-note
+                    pv: 30
+                    likes: 50
+                  - id: 2026-04-29-first-note
+                    pv: 123
+                    likes: 10
+        "400":
+          description: page指定が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: "page must be 0 or greater integer"
+        "500":
+          description: サーバーエラー、またはlikes用GSI名未設定
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                gsiNotConfigured:
+                  value:
+                    message: "likes GSI name is not configured"
+                internalError:
+                  value:
+                    message: "Internal server error"
+
+components:
+  schemas:
+    IdRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: ブログID
+          pattern: "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$"
+          example: 2026-04-29-first-note
+
+    BlogCounter:
+      type: object
+      properties:
+        pv:
+          type: integer
+          minimum: 0
+          example: 123
+        likes:
+          type: integer
+          minimum: 0
+          example: 10
+
+    BlogRankingItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 2026-04-29-first-note
+        pv:
+          type: integer
+          minimum: 0
+          example: 123
+        likes:
+          type: integer
+          minimum: 0
+          example: 10
+
+    GetBlogsResponse:
+      type: object
+      properties:
+        returnedAt:
+          type: string
+          format: date-time
+          example: "2026-04-30T07:00:00.000Z"
+        blogs:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/BlogCounter"
+          example:
+            2026-04-29-first-note:
+              pv: 123
+              likes: 10
+            2026-04-30-second-note:
+              pv: 45
+              likes: 3
+
+    CounterUpdateResponse:
+      type: object
+      properties:
+        returnedAt:
+          type: string
+          format: date-time
+          example: "2026-04-30T07:00:00.000Z"
+        id:
+          type: string
+          example: 2026-04-29-first-note
+        pv:
+          type: integer
+          minimum: 0
+          example: 124
+        likes:
+          type: integer
+          minimum: 0
+          example: 10
+
+    SortedBlogsResponse:
+      type: object
+      properties:
+        returnedAt:
+          type: string
+          format: date-time
+          example: "2026-04-30T07:00:00.000Z"
+        sort:
+          type: string
+          enum:
+            - pv
+            - likes
+          example: pv
+        page:
+          type: integer
+          minimum: 0
+          example: 0
+        pageSize:
+          type: integer
+          example: 30
+        hasNext:
+          type: boolean
+          example: true
+        blogs:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlogRankingItem"
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Internal server error"
+
+    NotFoundResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "id does not exist"
+        id:
+          type: string
+          example: 2030-04-30-final-note

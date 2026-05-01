@@ -1,0 +1,16 @@
+{
+"companyName": "DefaultCompany",
+"productName": "6moonBakaGame",
+"productVersion": "0.1",
+"dataUrl": "6moonG.data.unityweb",
+"wasmCodeUrl": "6moonG.wasm.code.unityweb",
+"wasmFrameworkUrl": "6moonG.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Dark",
+"backgroundColor": "#231F20",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.4.16f1"
+}

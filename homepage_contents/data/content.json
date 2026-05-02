@@ -1,23 +1,16 @@
 {
   "site": {
     "name": "ARCANADE",
-    "email": "contact@example.com",
-    "x": "https://x.com/"
+    "email": "contact@arcanade.com",
+    "x": "https://x.com/Arcanade_x",
+    "popularBlogId": "2026-03-28-website-open"
   },
   "blogs": [
     {
-      "id": "2026-04-29-first-note",
-      "title": "ARCANADEを作り直す",
-      "updatedAt": "2026-04-29T10:00:00+09:00",
-      "summary": "ブログ、制作物、ミニゲームをひとつの導線で見せるための設計メモです。",
-      "pv": 1280,
-      "likes": 84
-    },
-    {
-      "id": "2026-04-29-second-note",
-      "title": "2026-04-29-second-note",
-      "updatedAt": "2026-04-29T00:00:00+09:00",
-      "summary": "こんにちは",
+      "id": "2026-04-12-make-budget",
+      "title": "家計簿アプリ作りました！",
+      "updatedAt": "2026-04-12T00:00:00+09:00",
+      "summary": "家計簿アプリ作りました！スマートフォンでもPCでも好きなタイミングで利用できるそんな家計簿を作りました。",
       "pv": 0,
       "likes": 0
     },
@@ -40,118 +33,48 @@
   ],
   "works": [
     {
-      "id": "2026-04-29-showcase",
-      "title": "Digital Showcase Reel",
-      "updatedAt": "2026-04-29T11:00:00+09:00",
-      "summary": "映像、画像、Web向けインタラクションを横断して見せるショーケースです。",
-      "description": "作品の説明と視聴エリアを左右に分け、画像と動画を切り替えながら確認できます。動画URLは生成ツール側で埋め込みURLへ変換されます。",
-      "thumbnail": "assets/hero-arcanade.png",
-      "pv": 940,
-      "likes": 63,
+      "id": "2026-05-02-budget-app",
+      "title": "家計簿アプリ",
+      "updatedAt": "2026-05-02T08:00:00+09:00",
+      "summary": "家計簿アプリです！",
+      "description": "家計簿アプリを作りました。<br>\nリンク：[https://budget.arcanade.com](https://budget.arcanade.com)<br>\nGoogleのアカウントでログインすることで利用できます<br>\nスマートフォン・PCといった異なるデバイス間でのデータ同期可能！<br>",
+      "thumbnail": "works/2026-05-02-budget-app/image/01.png",
+      "pv": 0,
+      "likes": 0,
       "media": [
         {
           "type": "image",
-          "src": "assets/hero-arcanade.png",
+          "src": "works/2026-05-02-budget-app/image/01.png",
           "embedUrl": "",
-          "thumbnail": "assets/hero-arcanade.png",
-          "title": "Main visual"
-        }
-      ]
-    },
-    {
-      "id": "2026-04-29-test",
-      "title": "Digital Showcase Reel",
-      "updatedAt": "2026-04-29T11:00:00+09:00",
-      "summary": "映像、画像、Web向けインタラクションを横断して見せるショーケースです。",
-      "description": "作品の説明と視聴エリアを左右に分け、画像と動画を切り替えながら確認できます。動画URLは生成ツール側で埋め込みURLへ変換されます。",
-      "thumbnail": "assets/hero-arcanade.png",
-      "pv": 940,
-      "likes": 63,
-      "media": [
+          "thumbnail": "works/2026-05-02-budget-app/image/01.png",
+          "title": "top-page"
+        },
         {
           "type": "image",
-          "src": "assets/hero-arcanade.png",
+          "src": "works/2026-05-02-budget-app/image/02.png",
           "embedUrl": "",
-          "thumbnail": "assets/hero-arcanade.png",
-          "title": "Main visual"
+          "thumbnail": "works/2026-05-02-budget-app/image/02.png",
+          "title": "top-page"
         },
         {
-          "type": "video",
-          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
-          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
-          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
-          "title": "紹介動画"
-        },
-        {
-          "type": "video",
-          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
-          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
-          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
-          "title": "紹介動画"
-        },
-        {
-          "type": "video",
-          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
-          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
-          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
-          "title": "紹介動画"
-        },
-        {
-          "type": "video",
-          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
-          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
-          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
-          "title": "紹介動画"
-        },
-        {
-          "type": "video",
-          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
-          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
-          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
-          "title": "紹介動画"
-        },
-        {
-          "type": "video",
-          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
-          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
-          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
-          "title": "紹介動画"
-        },
-        {
-          "type": "video",
-          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
-          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
-          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
-          "title": "紹介動画"
-        },
-        {
-          "type": "video",
-          "src": "https://www.youtube.com/watch?v=yS-fsWrARw8&list=RDyS-fsWrARw8&start_radio=1&pp=oAcB",
-          "embedUrl": "https://www.youtube.com/embed/yS-fsWrARw8",
-          "thumbnail": "https://img.youtube.com/vi/yS-fsWrARw8/mqdefault.jpg",
-          "title": "紹介動画"
+          "type": "image",
+          "src": "works/2026-05-02-budget-app/image/03.png",
+          "embedUrl": "",
+          "thumbnail": "works/2026-05-02-budget-app/image/03.png",
+          "title": "top-page"
         }
       ]
     }
   ],
   "games": [
     {
-      "id": "2026-04-29-mini-lab",
-      "title": "Mini Lab",
-      "updatedAt": "2026-04-29T12:00:00+09:00",
-      "summary": "Unity WebGLの配置を想定したミニゲーム枠です。",
-      "pv": 720,
-      "likes": 41,
-      "buildUrl": "games/2026-04-29-mini-lab/build/index.html"
-    },
-    {
-      "id": "2026-04-29-siryoku",
+      "id": "2026-05-02-siryoku",
       "title": "視力検査",
-      "updatedAt": "2026-04-29T12:00:00+09:00",
-      "summary": "Unity WebGLの配置を想定したミニゲーム枠です。",
-      "pv": 720,
-      "likes": 41,
-      "buildUrl": "games/2026-04-29-siryoku/build/index.html"
+      "updatedAt": "2026-05-02T10:00:00+09:00",
+      "summary": "視力検査をモチーフとしたミニゲームです！",
+      "pv": 0,
+      "likes": 0,
+      "buildUrl": "games/2026-05-02-siryoku/build/index.html"
     }
   ]
 }

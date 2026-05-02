@@ -23,124 +23,54 @@
             <span>トップ</span>
           </button>
           <button class="nav-link" type="button" data-nav="blog" aria-label="ブログ">
-            <span class="nav-icon">▤</span>
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M6 4.5h10.5a1.5 1.5 0 0 1 1.5 1.5v12.5a1 1 0 0 1-1.35.94L15 18.75l-2.15.69a1 1 0 0 1-.7 0L10 18.75l-2.15.69a1 1 0 0 1-1.35-.94V4.5Z"></path>
+                <path d="M9 8h6"></path>
+                <path d="M9 11.5h6"></path>
+                <path d="M9 15h4"></path>
+              </svg>
+            </span>
             <span>ブログ</span>
           </button>
           <button class="nav-link" type="button" data-nav="works" aria-label="制作物">
-            <span class="nav-icon">▶</span>
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M4.5 19.5 6 15l9.9-9.9a1.8 1.8 0 0 1 2.55 0l.45.45a1.8 1.8 0 0 1 0 2.55L9 18l-4.5 1.5Z"></path>
+                <path d="m14.5 6.5 3 3"></path>
+                <path d="M6 15l3 3"></path>
+              </svg>
+            </span>
             <span>制作物</span>
           </button>
           <button class="nav-link is-active" type="button" data-nav="games" aria-label="ミニゲーム">
-            <span class="nav-icon">▦</span>
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M8.2 10.2h7.6c2.3 0 4.2 1.8 4.5 4.1l.26 2.1a2.3 2.3 0 0 1-3.94 1.9l-1.52-1.55H8.9L7.38 18.3a2.3 2.3 0 0 1-3.94-1.9l.26-2.1c.3-2.3 2.2-4.1 4.5-4.1Z"></path>
+                <path d="M8.3 13v3"></path>
+                <path d="M6.8 14.5h3"></path>
+                <path d="M15.8 14.1h.01"></path>
+                <path d="M17.7 15.5h.01"></path>
+              </svg>
+            </span>
             <span>ゲーム</span>
           </button>
           <button class="nav-link" type="button" data-nav="contact" aria-label="コンタクト">
-            <span class="nav-icon">✉</span>
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M4.5 6.5h15a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17V8a1.5 1.5 0 0 1 1.5-1.5Z"></path>
+                <path d="m4.5 8 7.5 5.4L19.5 8"></path>
+              </svg>
+            </span>
             <span>連絡</span>
           </button>
         </div>
       </nav>
 
       <main class="site-main" id="main">
-        <section class="view" id="home-view" data-view="home" aria-labelledby="home-title">
-          <div class="hero">
-            <img class="hero-image" src="assets/hero-arcanade.png" alt="デジタル作品の制作環境を表したビジュアル">
-            <div class="hero-copy">
-              <p class="eyebrow">Creative archive and digital works</p>
-              <h1 id="home-title">ARCANADE</h1>
-              <p class="hero-lead">制作記録、映像作品、WebGLミニゲームをまとめた創作拠点です。読み物から遊べる作品まで、更新順と反応の多い順で探せます。</p>
-              <div class="hero-actions">
-                <button class="button primary" type="button" data-nav="works">制作物を見る</button>
-                <button class="button ghost" type="button" data-nav="contact">連絡する</button>
-              </div>
-            </div>
-          </div>
-
-          <section class="content-band" aria-labelledby="home-blog-title">
-            <div class="section-heading">
-              <p class="eyebrow">Blog</p>
-              <h2 id="home-blog-title">ブログ</h2>
-              <button class="button text" type="button" data-nav="blog">一覧へ</button>
-            </div>
-            <div class="feature-grid" id="home-blog-list"></div>
-          </section>
-
-          <section class="content-band muted" aria-labelledby="home-work-title">
-            <div class="section-heading">
-              <p class="eyebrow">Works</p>
-              <h2 id="home-work-title">制作物</h2>
-              <button class="button text" type="button" data-nav="works">一覧へ</button>
-            </div>
-            <div class="work-strip" id="home-work-list"></div>
-          </section>
-
-          <section class="content-band" aria-labelledby="home-game-title">
-            <div class="section-heading">
-              <p class="eyebrow">Mini Games</p>
-              <h2 id="home-game-title">ミニゲーム</h2>
-              <button class="button text" type="button" data-nav="games">一覧へ</button>
-            </div>
-            <div class="feature-grid compact" id="home-game-list"></div>
-          </section>
-
-          <section class="content-band contact-preview" aria-labelledby="home-contact-title">
-            <div>
-              <p class="eyebrow">Contact</p>
-              <h2 id="home-contact-title">制作の感想や依頼相談はこちらへ</h2>
-              <p>X、メール、お問い合わせフォームから連絡できます。</p>
-            </div>
-            <button class="button primary" type="button" data-nav="contact">コンタクトへ</button>
-          </section>
-        </section>
-
-        <section class="view" id="blog-view" data-view="blog" aria-labelledby="blog-title">
-          <div class="page-head">
-            <div>
-              <p class="eyebrow">Blog</p>
-              <h1 id="blog-title">ブログ</h1>
-            </div>
-          </div>
-          <div id="blog-list-view">
-            <div class="toolbar">
-              <label class="search-field">
-                <span>検索</span>
-                <input id="blog-search" type="search" placeholder="タイトルや概要">
-              </label>
-              <div class="segmented" role="group" aria-label="ブログの並び替え">
-                <button class="is-active" type="button" data-blog-sort="updated">最新</button>
-                <button type="button" data-blog-sort="popular">人気</button>
-              </div>
-            </div>
-            <div class="card-grid" id="blog-list"></div>
-            <div class="pager" id="blog-pager"></div>
-          </div>
-          <article class="detail-view" id="blog-detail-view" hidden></article>
-        </section>
-
-        <section class="view" id="works-view" data-view="works" aria-labelledby="works-title">
-          <div class="page-head">
-            <div>
-              <p class="eyebrow">Works</p>
-              <h1 id="works-title">制作物</h1>
-            </div>
-          </div>
-          <div id="work-list-view">
-            <div class="toolbar">
-              <label class="search-field">
-                <span>検索</span>
-                <input id="work-search" type="search" placeholder="作品名や概要">
-              </label>
-              <div class="segmented" role="group" aria-label="制作物の並び替え">
-                <button class="is-active" type="button" data-work-sort="updated">最新</button>
-                <button type="button" data-work-sort="popular">人気</button>
-              </div>
-            </div>
-            <div class="work-list" id="work-list"></div>
-            <div class="pager" id="work-pager"></div>
-          </div>
-          <article class="work-detail" id="work-detail-view" hidden></article>
-        </section>
-
+        
+        
+        
         <section class="view is-current" id="games-view" data-view="games" aria-labelledby="games-title">
           <div class="page-head">
             <div>
@@ -154,44 +84,7 @@
           </div>
         </section>
 
-        <section class="view" id="contact-view" data-view="contact" aria-labelledby="contact-title">
-          <div class="page-head">
-            <div>
-              <p class="eyebrow">Contact</p>
-              <h1 id="contact-title">コンタクト</h1>
-            </div>
-          </div>
-          <div class="contact-layout">
-            <section class="contact-info" aria-label="連絡先">
-              <h2>ARCANADEへの連絡</h2>
-              <p>作品の感想、制作相談、コラボレーションの連絡を受け付けています。</p>
-              <dl>
-                <div>
-                  <dt>X</dt>
-                  <dd><a href="https://x.com/" target="_blank" rel="noreferrer">https://x.com/</a></dd>
-                </div>
-                <div>
-                  <dt>Mail</dt>
-                  <dd><a href="mailto:contact@example.com">contact@example.com</a></dd>
-                </div>
-              </dl>
-            </section>
-            <form class="contact-form" id="contact-form">
-              <h2>匿名での連絡フォーム</h2>
-              <label>
-                <span>件名</span>
-                <input name="subject" type="text" required autocomplete="off">
-              </label>
-              <label>
-                <span>連絡内容</span>
-                <textarea name="message" rows="8" required placeholder="作品の感想・依頼相談など"></textarea>
-              </label>
-              <button class="button primary" type="submit">送信</button>
-              <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
-            </form>
-          </div>
-        </section>
-      </main>
+        </main>
     </div>
     <script>
       window.ARCANADE_PAGE = {"view":"games","detailType":"","detailId":""};

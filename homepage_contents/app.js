@@ -24,7 +24,8 @@ const fallbackData = {
   site: {
     name: "ARCANADE",
     email: "contact@example.com",
-    x: "https://x.com/"
+    x: "https://x.com/",
+    popularBlogId: ""
   },
   blogs: [
     {
@@ -96,6 +97,7 @@ const formatDate = new Intl.DateTimeFormat("ja-JP", {
 const pageConfig = window.ARCANADE_PAGE || inferPageConfig();
 const views = [...document.querySelectorAll("[data-view]")];
 const navButtons = [...document.querySelectorAll("[data-nav]")];
+let tocHighlightTimer = 0;
 
 init();
 
@@ -107,8 +109,11 @@ async function init() {
   hydrateContact();
   bindNavigation();
   bindControls();
+  bindBlogToc(document);
   renderAll();
   routeFromPage();
+  requestAnimationFrame(() => highlightHeadingFromHash());
+  window.addEventListener("hashchange", () => highlightHeadingFromHash());
   updateCounterElements();
 }
 
@@ -221,17 +226,23 @@ function bindNavigation() {
 }
 
 function bindControls() {
-  document.getElementById("blog-search").addEventListener("input", (event) => {
-    state.blogSearch = event.target.value.trim();
-    state.blogPage = 1;
-    renderBlogList();
-  });
+  const blogSearch = document.getElementById("blog-search");
+  if (blogSearch) {
+    blogSearch.addEventListener("input", (event) => {
+      state.blogSearch = event.target.value.trim();
+      state.blogPage = 1;
+      renderBlogList();
+    });
+  }
 
-  document.getElementById("work-search").addEventListener("input", (event) => {
-    state.workSearch = event.target.value.trim();
-    state.workPage = 1;
-    renderWorkList();
-  });
+  const workSearch = document.getElementById("work-search");
+  if (workSearch) {
+    workSearch.addEventListener("input", (event) => {
+      state.workSearch = event.target.value.trim();
+      state.workPage = 1;
+      renderWorkList();
+    });
+  }
 
   document.querySelectorAll("[data-blog-sort]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -249,7 +260,8 @@ function bindControls() {
     });
   });
 
-  document.getElementById("contact-form").addEventListener("submit", handleContactSubmit);
+  const contactForm = document.getElementById("contact-form");
+  if (contactForm) contactForm.addEventListener("submit", handleContactSubmit);
 }
 
 function setActiveSegment(selector, activeButton) {
@@ -291,22 +303,28 @@ function renderAll() {
 
 function renderHome() {
   const latestBlogs = sortItems(state.data.blogs, "updated").slice(0, 1);
-  const popularBlogs = sortItems(state.data.blogs, "popular").slice(0, 1);
+  const configuredPopularBlog = state.data.blogs.find((blog) => blog.id === state.data.site.popularBlogId);
+  const popularBlogs = configuredPopularBlog ? [configuredPopularBlog] : sortItems(state.data.blogs, "popular").slice(0, 1);
   renderCards(document.getElementById("home-blog-list"), uniqueById([...popularBlogs, ...latestBlogs]), "blog");
 
   const popularWorks = sortItems(state.data.works, "popular").slice(0, 3);
-  document.getElementById("home-work-list").innerHTML = popularWorks.map(workItemTemplate).join("");
-  bindWorkItems(document.getElementById("home-work-list"));
+  const homeWorkList = document.getElementById("home-work-list");
+  if (homeWorkList) {
+    homeWorkList.innerHTML = popularWorks.map(workItemTemplate).join("");
+    bindWorkItems(homeWorkList);
+  }
 
   const popularGames = sortItems(state.data.games, "popular").slice(0, 3);
   renderCards(document.getElementById("home-game-list"), popularGames, "game");
 }
 
 function renderBlogList() {
+  const container = document.getElementById("blog-list");
+  if (!container) return;
   const items = filterItems(state.data.blogs, state.blogSearch);
   const sorted = sortItems(items, state.blogSort);
   const page = paginate(sorted, state.blogPage, 30);
-  renderCards(document.getElementById("blog-list"), page.items, "blog");
+  renderCards(container, page.items, "blog");
   renderPager(document.getElementById("blog-pager"), page.totalPages, state.blogPage, (nextPage) => {
     state.blogPage = nextPage;
     renderBlogList();
@@ -314,10 +332,11 @@ function renderBlogList() {
 }
 
 function renderWorkList() {
+  const container = document.getElementById("work-list");
+  if (!container) return;
   const items = filterItems(state.data.works, state.workSearch);
   const sorted = sortItems(items, state.workSort);
   const page = paginate(sorted, state.workPage, 10);
-  const container = document.getElementById("work-list");
   container.innerHTML = page.items.length ? page.items.map(workItemTemplate).join("") : emptyTemplate();
   bindWorkItems(container);
   renderPager(document.getElementById("work-pager"), page.totalPages, state.workPage, (nextPage) => {
@@ -327,6 +346,7 @@ function renderWorkList() {
 }
 
 function renderCards(container, items, type) {
+  if (!container) return;
   container.innerHTML = items.length ? items.map((item) => cardTemplate(item, type)).join("") : emptyTemplate();
   container.querySelectorAll("[data-card-id]").forEach((card) => {
     card.addEventListener("click", (event) => {
@@ -382,6 +402,7 @@ function workItemTemplate(item) {
 }
 
 function bindWorkItems(container) {
+  if (!container) return;
   container.querySelectorAll("[data-work-id]").forEach((button) => {
     button.addEventListener("click", (event) => {
       if (event.target.closest("[data-share]")) {
@@ -401,7 +422,8 @@ function openBlog(id, options = {}) {
   recordPv(item);
   const list = document.getElementById("blog-list-view");
   const detail = document.getElementById("blog-detail-view");
-  list.hidden = true;
+  if (!detail) return;
+  if (list) list.hidden = true;
   detail.hidden = false;
   const staticDetail = getStaticDetail("blog", id);
   if (!replaceUrl && staticDetail) {
@@ -409,30 +431,39 @@ function openBlog(id, options = {}) {
     showView("blog", { resetDetail: false });
     return;
   }
+  const article = renderMarkdownArticle(item.body || item.summary || "");
   detail.innerHTML = `
-    <div class="detail-shell">
-      <a class="button back-button" href="${pathForView("blog")}" data-back-blog>一覧に戻る</a>
-      <div class="meta-row">
-        <span>${formatDateText(item.updatedAt)}</span>
-        <span>${metricText(getPvCount(item), "PV")}</span>
-        <span>${metricText(getLikeCount(item), "いいね")}</span>
-      </div>
-      <h1>${escapeHtml(item.title)}</h1>
-      <div class="article-body">${markdownLite(item.body || item.summary || "")}</div>
-      <div class="detail-actions">
-        <button class="like-button" type="button" data-like="${escapeHtml(item.id)}">いいね ${getLikeCount(item)}</button>
-        <button class="share-button" type="button" data-share="${pathForBlog(item.id)}" data-title="${escapeHtml(item.title)}">共有</button>
+    <div class="blog-detail-layout">
+      ${renderBlogToc(article.toc, pathForBlog(item.id))}
+      <div class="detail-shell blog-article">
+        <div class="blog-title-row">
+          <a class="button back-button" href="${pathForView("blog")}" data-back-blog>一覧に戻る</a>
+          <h1>${escapeHtml(item.title)}</h1>
+        </div>
+        <div class="meta-row">
+          <span>${formatDateText(item.updatedAt)}</span>
+          <span>${metricText(getPvCount(item), "PV")}</span>
+          <span>${metricText(getLikeCount(item), "いいね")}</span>
+        </div>
+        <div class="article-body">${article.html}</div>
+        <div class="detail-actions">
+          <button class="like-button" type="button" data-like="${escapeHtml(item.id)}">いいね ${getLikeCount(item)}</button>
+          <button class="share-button" type="button" data-share="${pathForBlog(item.id)}" data-title="${escapeHtml(item.title)}">共有</button>
+        </div>
       </div>
     </div>
   `;
   bindDetailActions(detail, item);
+  bindBlogToc(detail);
   showView("blog", { resetDetail: false });
   if (replaceUrl) goToPath(pathForBlog(item.id));
 }
 
 function showBlogList() {
-  document.getElementById("blog-list-view").hidden = false;
-  document.getElementById("blog-detail-view").hidden = true;
+  const list = document.getElementById("blog-list-view");
+  const detail = document.getElementById("blog-detail-view");
+  if (list) list.hidden = false;
+  if (detail) detail.hidden = true;
 }
 
 function openWork(id, options = {}) {
@@ -443,7 +474,8 @@ function openWork(id, options = {}) {
   const list = document.getElementById("work-list-view");
   const detail = document.getElementById("work-detail-view");
   const media = item.media?.length ? item.media : [{ type: "image", src: item.thumbnail || "assets/hero-arcanade.png", thumbnail: item.thumbnail || "assets/hero-arcanade.png", title: item.title }];
-  list.hidden = true;
+  if (!detail) return;
+  if (list) list.hidden = true;
   detail.hidden = false;
   const staticDetail = getStaticDetail("work", id);
   if (!replaceUrl && staticDetail) {
@@ -461,7 +493,7 @@ function openWork(id, options = {}) {
           <span>${metricText(getPvCount(item), "PV")}</span>
         </div>
         <h1>${escapeHtml(item.title)}</h1>
-        <p class="article-body">${escapeHtml(item.description || item.summary || "")}</p>
+        <div class="article-body">${markdownLite(item.description || item.summary || "")}</div>
         <div class="detail-actions">
           <button class="like-button" type="button" data-like="${escapeHtml(item.id)}">いいね ${getLikeCount(item)}</button>
           <button class="share-button" type="button" data-share="${pathForWork(item.id)}" data-title="${escapeHtml(item.title)}">共有</button>
@@ -497,13 +529,16 @@ function openWork(id, options = {}) {
 }
 
 function showWorkList() {
-  document.getElementById("work-list-view").hidden = false;
-  document.getElementById("work-detail-view").hidden = true;
+  const list = document.getElementById("work-list-view");
+  const detail = document.getElementById("work-detail-view");
+  if (list) list.hidden = false;
+  if (detail) detail.hidden = true;
 }
 
 function renderGames() {
   if (!state.selectedGameId && state.data.games[0]) state.selectedGameId = state.data.games[0].id;
   const list = document.getElementById("game-list");
+  if (!list) return;
   list.innerHTML = state.data.games.map((game) => `
     <button class="game-list-item ${game.id === state.selectedGameId ? "is-active" : ""}" type="button" data-game-id="${escapeHtml(game.id)}">
       <span class="meta-row">
@@ -540,6 +575,7 @@ function selectGame(id, options = {}) {
 
 function renderGameStage() {
   const stage = document.getElementById("game-stage");
+  if (!stage) return;
   const game = state.data.games.find((item) => item.id === state.selectedGameId);
   if (!game) {
     stage.innerHTML = emptyTemplate();
@@ -563,14 +599,15 @@ function renderGameStage() {
     </div>
     ${game.body ? `<div class="article-body game-description">${markdownLite(game.body)}</div>` : ""}
   `;
-  stage.querySelector("[data-fullscreen]").addEventListener("click", () => {
+  stage.querySelector("[data-fullscreen]")?.addEventListener("click", () => {
     const frame = document.getElementById("unity-frame");
-    if (frame.requestFullscreen) frame.requestFullscreen();
+    if (frame?.requestFullscreen) frame.requestFullscreen();
   });
   bindDetailActions(stage, game);
 }
 
 function bindDetailActions(scope, item) {
+  if (!scope) return;
   scope.querySelectorAll("[data-like]").forEach((button) => {
     button.addEventListener("click", () => {
       const next = recordLike(item);
@@ -583,6 +620,65 @@ function bindDetailActions(scope, item) {
   });
 }
 
+function bindBlogToc(scope) {
+  scope.querySelectorAll("[data-toc-toggle]").forEach((button) => {
+    if (button.dataset.tocBound) return;
+    button.dataset.tocBound = "true";
+    button.addEventListener("click", () => {
+      const toc = button.closest(".blog-toc");
+      if (!toc) return;
+      const collapsed = toc.classList.toggle("is-collapsed");
+      button.setAttribute("aria-expanded", String(!collapsed));
+      button.setAttribute("aria-label", collapsed ? "目次を展開する" : "目次を折りたたむ");
+    });
+  });
+
+  scope.querySelectorAll(".blog-toc-link").forEach((link) => {
+    if (link.dataset.tocBound) return;
+    link.dataset.tocBound = "true";
+    link.addEventListener("click", (event) => {
+      const url = new URL(link.href);
+      const id = decodeURIComponent(url.hash.slice(1));
+      const target = id ? document.getElementById(id) : null;
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ block: "start" });
+      history.replaceState(null, "", `${location.pathname}${location.search}#${encodeURIComponent(id)}`);
+      highlightBlogHeading(target);
+    });
+  });
+}
+
+function highlightHeadingFromHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const target = id ? document.getElementById(id) : null;
+  if (target) highlightBlogHeading(target);
+}
+
+function highlightBlogHeading(target) {
+  window.clearTimeout(tocHighlightTimer);
+  document.querySelectorAll(".article-body .is-toc-highlight").forEach((heading) => {
+    heading.classList.remove("is-toc-highlight");
+  });
+  document.querySelectorAll(".blog-toc-link.is-active").forEach((link) => {
+    link.classList.remove("is-active");
+  });
+
+  target.classList.add("is-toc-highlight");
+  const activeLink = [...document.querySelectorAll(".blog-toc-link")].find((link) => {
+    try {
+      return decodeURIComponent(new URL(link.href).hash.slice(1)) === target.id;
+    } catch {
+      return false;
+    }
+  });
+  activeLink?.classList.add("is-active");
+  tocHighlightTimer = window.setTimeout(() => {
+    target.classList.remove("is-toc-highlight");
+    activeLink?.classList.remove("is-active");
+  }, 3000);
+}
+
 function getStaticDetail(type, id) {
   return [...document.querySelectorAll("[data-static-detail]")].find((element) => (
     element.dataset.staticDetail === type && element.dataset.staticId === id
@@ -590,7 +686,9 @@ function getStaticDetail(type, id) {
 }
 
 function hydrateStaticDetail(scope, item) {
+  if (!scope) return;
   bindDetailActions(scope, item);
+  bindBlogToc(scope);
   const fullscreenButton = scope.querySelector("[data-fullscreen]");
   if (fullscreenButton) {
     fullscreenButton.addEventListener("click", () => {
@@ -709,6 +807,7 @@ function paginate(items, currentPage, pageSize) {
 }
 
 function renderPager(container, totalPages, currentPage, onSelect) {
+  if (!container) return;
   if (totalPages <= 1) {
     container.innerHTML = "";
     return;
@@ -855,7 +954,32 @@ async function shareItem(path, title) {
   await navigator.clipboard.writeText(url);
 }
 
-function markdownLite(text) {
+function renderMarkdownArticle(text) {
+  const toc = [];
+  return {
+    html: markdownLite(text, { toc, headingIds: new Map() }),
+    toc
+  };
+}
+
+function renderBlogToc(toc, basePath = "") {
+  const entries = toc.map((item) => `
+                  <a class="blog-toc-link level-${item.level}" href="${escapeAttribute(basePath)}#${escapeAttribute(item.id)}">${escapeHtml(item.title)}</a>
+                `).join("");
+  return `
+      <aside class="blog-toc" aria-labelledby="blog-toc-title">
+        <div class="blog-toc-head">
+          <h2 id="blog-toc-title">目次</h2>
+          <button class="blog-toc-toggle" type="button" data-toc-toggle aria-label="目次を折りたたむ" aria-expanded="true">☰</button>
+        </div>
+        <nav class="blog-toc-list" aria-label="記事内目次">
+          ${entries || '<span class="blog-toc-empty">見出しがありません</span>'}
+        </nav>
+      </aside>
+    `;
+}
+
+function markdownLite(text, options = {}) {
   const lines = String(text ?? "").replace(/\r\n?/g, "\n").split("\n");
   const html = [];
   let index = 0;
@@ -885,7 +1009,11 @@ function markdownLite(text) {
     const heading = line.match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
     if (heading) {
       const level = heading[1].length;
-      html.push(`<h${level}>${parseInlineMarkdown(heading[2])}</h${level}>`);
+      const title = plainTextForHeading(heading[2]);
+      const id = options.toc ? uniqueHeadingId(title, options.headingIds) : "";
+      if (options.toc) options.toc.push({ id, title, level });
+      const idAttribute = id ? ` id="${escapeAttribute(id)}"` : "";
+      html.push(`<h${level}${idAttribute}>${parseInlineMarkdown(heading[2])}</h${level}>`);
       index += 1;
       continue;
     }
@@ -1083,6 +1211,32 @@ function isMarkdownHtmlBlockStart(line) {
 
 function renderMarkdownHtmlBlock(lines) {
   return lines.map((line) => parseInlineMarkdown(line)).join("\n");
+}
+
+function uniqueHeadingId(title, headingIds = new Map()) {
+  const base = slugifyHeadingId(title);
+  const count = headingIds.get(base) || 0;
+  headingIds.set(base, count + 1);
+  return count ? `${base}-${count + 1}` : base;
+}
+
+function slugifyHeadingId(value) {
+  const slug = String(value ?? "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
+    .replace(/^-+|-+$/gu, "");
+  return slug || "section";
+}
+
+function plainTextForHeading(value) {
+  return String(value ?? "")
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/<\/?[a-z][a-z0-9-]*(?:\s+[^<>]*?)?\s*\/?>/gi, "")
+    .replace(/[#*_~]+/g, "")
+    .trim() || "セクション";
 }
 
 function parseInlineMarkdown(value) {

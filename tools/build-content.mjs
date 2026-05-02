@@ -20,14 +20,15 @@ const ALLOWED_HTML_ATTRIBUTES = new Set(["align", "class", "height", "id", "styl
 const site = {
   name: "ARCANADE",
   email: "contact@example.com",
-  x: "https://x.com/"
+  x: "https://x.com/",
+  popularBlogId: ""
 };
 
 const data = {
-  site,
+  site: await readSite(),
   blogs: await readBlogs(),
-  works: await readJsonCollection("work", normalizeWork),
-  games: await readJsonCollection("game", normalizeGame)
+  works: await readMarkdownCollection("work", normalizeWork),
+  games: await readMarkdownCollection("game", normalizeGame)
 };
 
 await fs.mkdir(path.dirname(outFile), { recursive: true });
@@ -35,6 +36,13 @@ await fs.writeFile(outFile, `${JSON.stringify(toPublicData(data), null, 2)}\n`, 
 console.log(`Wrote ${path.relative(root, outFile)}`);
 
 await writePages(data);
+
+async function readSite() {
+  const file = path.join(userRoot, "site.json");
+  if (!(await exists(file))) return site;
+  const source = JSON.parse(await fs.readFile(file, "utf8"));
+  return { ...site, ...source };
+}
 
 async function readBlogs() {
   const directories = await listDirectories(path.join(userRoot, "blog"));
@@ -58,29 +66,32 @@ async function readBlogs() {
   return sortByUpdated(blogs);
 }
 
-async function readJsonCollection(kind, normalize) {
+async function readMarkdownCollection(kind, normalize) {
   const directories = await listDirectories(path.join(userRoot, kind));
   const items = [];
   for (const directory of directories) {
-    const file = path.join(directory, "index.json");
-    if (!(await exists(file))) continue;
-    const source = JSON.parse(await fs.readFile(file, "utf8"));
-    items.push(await normalize(source, path.basename(directory), directory));
+    const markdownFile = path.join(directory, "index.md");
+    const id = path.basename(directory);
+    if (!(await exists(markdownFile))) continue;
+    const source = await fs.readFile(markdownFile, "utf8");
+    const { frontMatter, body } = parseFrontMatter(source);
+    items.push(await normalize(frontMatter, id, directory, body.trim()));
   }
   return sortByUpdated(items);
 }
 
-async function normalizeWork(source, id, directory) {
+async function normalizeWork(source, id, directory, body = "") {
   const media = Array.isArray(source.media)
     ? await Promise.all(source.media.map((entry) => normalizeMedia(entry, id, directory)))
     : [];
   const thumbnail = await normalizeAssetPath(source.thumbnail || media[0]?.thumbnail || media[0]?.src || "", id, directory);
+  const description = body || source.description || source.summary || "";
   return {
     id,
     title: source.title || id,
     updatedAt: source.updatedAt || inferDate(id),
-    summary: source.summary || "",
-    description: source.description || source.summary || "",
+    summary: source.summary || firstSentence(description),
+    description,
     thumbnail,
     pv: numberOrZero(source.pv),
     likes: numberOrZero(source.likes),
@@ -88,26 +99,18 @@ async function normalizeWork(source, id, directory) {
   };
 }
 
-async function normalizeGame(source, id, directory) {
+async function normalizeGame(source, id, directory, body = "") {
   const generatedBuildUrl = await copyGameBuild(id, directory);
-  const body = await readOptionalMarkdownBody(path.join(directory, "index.md"));
   return {
     id,
     title: source.title || id,
     updatedAt: source.updatedAt || inferDate(id),
-    summary: source.summary || "",
+    summary: source.summary || firstSentence(body),
     pv: numberOrZero(source.pv),
     likes: numberOrZero(source.likes),
     buildUrl: source.buildUrl || generatedBuildUrl,
-    body
+    body: body.trim()
   };
-}
-
-async function readOptionalMarkdownBody(file) {
-  if (!(await exists(file))) return "";
-  const source = await fs.readFile(file, "utf8");
-  const { body } = parseFrontMatter(source);
-  return body.trim();
 }
 
 async function copyGameBuild(id, directory) {
@@ -235,24 +238,115 @@ async function exists(file) {
 }
 
 function parseFrontMatter(source) {
-  if (!source.startsWith("---")) return { frontMatter: {}, body: source };
-  const end = source.indexOf("\n---", 3);
-  if (end === -1) return { frontMatter: {}, body: source };
-  const yaml = source.slice(3, end).trim();
-  const body = source.slice(end + 4).trim();
+  const normalized = String(source ?? "").replace(/\r\n?/g, "\n");
+  if (!normalized.startsWith("---\n")) return { frontMatter: {}, body: normalized };
+  const endMatch = normalized.slice(4).match(/\n---\s*(?:\n|$)/);
+  if (!endMatch) return { frontMatter: {}, body: normalized };
+  const end = 4 + endMatch.index;
+  const yaml = normalized.slice(4, end).trim();
+  const body = normalized.slice(end + endMatch[0].length).trim();
+  return { frontMatter: parseFrontMatterBlock(yaml), body };
+}
+
+function parseFrontMatterBlock(yaml) {
+  const lines = String(yaml ?? "").split(/\n/);
   const frontMatter = {};
-  for (const line of yaml.split(/\r?\n/)) {
-    const index = line.indexOf(":");
-    if (index === -1) continue;
-    const key = line.slice(0, index).trim();
-    const value = line.slice(index + 1).trim();
-    frontMatter[key] = value;
+  let index = 0;
+  while (index < lines.length) {
+    const line = lines[index];
+    if (!line.trim() || line.trim().startsWith("#")) {
+      index += 1;
+      continue;
+    }
+    const match = line.match(/^([A-Za-z0-9_-]+):(?:\s*(.*))?$/);
+    if (!match) {
+      index += 1;
+      continue;
+    }
+    const key = match[1];
+    const inlineValue = match[2] ?? "";
+    index += 1;
+    if (inlineValue.trim()) {
+      frontMatter[key] = parseFrontMatterValue(inlineValue);
+      continue;
+    }
+    const block = [];
+    while (index < lines.length && (/^\s/.test(lines[index]) || !lines[index].trim())) {
+      block.push(lines[index]);
+      index += 1;
+    }
+    frontMatter[key] = parseFrontMatterNestedValue(block);
   }
-  return { frontMatter, body };
+  return frontMatter;
+}
+
+function parseFrontMatterNestedValue(lines) {
+  const text = lines.map((line) => line.replace(/^\s{2}/, "")).join("\n").trim();
+  if (!text) return "";
+  if (/^[\[{]/.test(text)) {
+    try {
+      return JSON.parse(text);
+    } catch {
+      // Fall through to the small YAML subset below.
+    }
+  }
+  const nonEmpty = lines.filter((line) => line.trim());
+  if (nonEmpty[0]?.trim().startsWith("-")) return parseFrontMatterArray(nonEmpty);
+  return text;
+}
+
+function parseFrontMatterArray(lines) {
+  const items = [];
+  let current = null;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("- ")) {
+      if (current !== null) items.push(current);
+      const value = trimmed.slice(2).trim();
+      const pair = splitFrontMatterPair(value);
+      current = pair ? { [pair.key]: parseFrontMatterValue(pair.value) } : parseFrontMatterValue(value);
+      continue;
+    }
+    const pair = splitFrontMatterPair(trimmed);
+    if (pair && current && typeof current === "object" && !Array.isArray(current)) {
+      current[pair.key] = parseFrontMatterValue(pair.value);
+    }
+  }
+  if (current !== null) items.push(current);
+  return items;
+}
+
+function splitFrontMatterPair(value) {
+  const index = String(value ?? "").indexOf(":");
+  if (index === -1) return null;
+  return {
+    key: value.slice(0, index).trim(),
+    value: value.slice(index + 1).trim()
+  };
+}
+
+function parseFrontMatterValue(value) {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return "";
+  if (/^[\[{]/.test(trimmed)) {
+    try {
+      return JSON.parse(trimmed);
+    } catch {
+      return trimmed;
+    }
+  }
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1);
+  }
+  if (/^(true|false)$/i.test(trimmed)) return trimmed.toLowerCase() === "true";
+  if (/^null$/i.test(trimmed)) return null;
+  if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) return Number(trimmed);
+  return trimmed;
 }
 
 function firstSentence(value) {
-  return value.trim().split(/\n|。/)[0] || "";
+  const text = String(value ?? "").replace(/[#*_`~>\-[\]]/g, "").trim();
+  return text.split(/\n|。/)[0].trim() || "";
 }
 
 function inferDate(slug) {
@@ -269,7 +363,7 @@ function sortByUpdated(items) {
 }
 
 async function writePages(content) {
-  const templatePath = path.join(root, "homepage_contents", "index.html");
+  const templatePath = path.join(root, "tools", "page-template.html");
   const template = await fs.readFile(templatePath, "utf8");
   const pages = [
     { file: path.join(root, "homepage_contents", "index.html"), base: "./", config: { view: "home", detailType: "", detailId: "" } },
@@ -303,11 +397,41 @@ async function writePages(content) {
     });
   }
 
+  await cleanupStaleGeneratedPages(root, content);
+
   for (const page of pages) {
     await fs.mkdir(path.dirname(page.file), { recursive: true });
     await fs.writeFile(page.file, renderPage(template, page.base, page.config, content), "utf8");
   }
   console.log(`Wrote ${pages.length} html pages`);
+}
+
+async function cleanupStaleGeneratedPages(root, content) {
+  const groups = [
+    ["blog", new Set(content.blogs.map((item) => item.id))],
+    ["works", new Set(content.works.map((item) => item.id))],
+    ["games", new Set(content.games.map((item) => item.id))]
+  ];
+  for (const [section, validIds] of groups) {
+    const sectionDir = path.join(root, "homepage_contents", section);
+    let entries = [];
+    try {
+      entries = await fs.readdir(sectionDir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      if (!entry.isDirectory() || validIds.has(entry.name)) continue;
+      const detailDir = path.join(sectionDir, entry.name);
+      const indexFile = path.join(detailDir, "index.html");
+      await fs.rm(indexFile, { force: true });
+      try {
+        await fs.rmdir(detailDir);
+      } catch {
+        // Keep non-empty folders, such as media/build folders, but remove their stale shell index.
+      }
+    }
+  }
 }
 
 function renderPage(template, base, config, content) {
@@ -320,6 +444,56 @@ function renderPage(template, base, config, content) {
   html = applyInitialView(html, config);
   html = applyInitialDetailState(html, config);
   html = injectStaticDetail(html, config, content);
+  html = prunePageHtml(html, config);
+  return html;
+}
+
+function prunePageHtml(html, config) {
+  for (const view of ["home", "blog", "works", "games", "contact"]) {
+    if (view !== config.view) html = removeViewSection(html, `${view}-view`);
+  }
+  if (config.view === "blog") {
+    html = config.detailType === "blog"
+      ? removeElementById(html, "div", "blog-list-view")
+      : removeElementById(html, "article", "blog-detail-view");
+  }
+  if (config.view === "works") {
+    html = config.detailType === "work"
+      ? removeElementById(html, "div", "work-list-view")
+      : removeElementById(html, "article", "work-detail-view");
+  }
+  return html;
+}
+
+function removeViewSection(html, id) {
+  const startMatch = new RegExp(`<section\\b[^>]*\\bid="${id}"[^>]*>`, "u").exec(html);
+  if (!startMatch) return html;
+  const start = startMatch.index;
+  const searchFrom = start + startMatch[0].length;
+  const nextViewMatch = /^\s*<section\b[^>]*\bclass="[^"]*\bview\b[^"]*"[^>]*>/mu.exec(html.slice(searchFrom));
+  const mainClose = html.indexOf("</main>", searchFrom);
+  const end = nextViewMatch ? searchFrom + nextViewMatch.index : mainClose;
+  if (end === -1) return html;
+  return html.slice(0, start) + html.slice(end);
+}
+
+function removeElementById(html, tag, id) {
+  const startPattern = new RegExp(`<${tag}\\b[^>]*\\bid="${id}"[^>]*>`, "u");
+  const startMatch = startPattern.exec(html);
+  if (!startMatch) return html;
+  const start = startMatch.index;
+  const tokenPattern = new RegExp(`</?${tag}\\b[^>]*>`, "gu");
+  tokenPattern.lastIndex = start + startMatch[0].length;
+  let depth = 1;
+  let match;
+  while ((match = tokenPattern.exec(html))) {
+    if (match[0].startsWith("</")) {
+      depth -= 1;
+    } else if (!match[0].endsWith("/>")) {
+      depth += 1;
+    }
+    if (depth === 0) return html.slice(0, start) + html.slice(tokenPattern.lastIndex);
+  }
   return html;
 }
 
@@ -408,19 +582,25 @@ function replaceElementInner(html, tag, id, innerHtml) {
 }
 
 function renderStaticBlog(blog) {
+  const article = renderMarkdownArticle(blog.body || blog.summary || "");
   return `
-            <div class="detail-shell" data-static-detail="blog" data-static-id="${escapeAttribute(blog.id)}">
-              <a class="button back-button" href="blog/">一覧に戻る</a>
-              <div class="meta-row">
-                <span>${formatDateText(blog.updatedAt)}</span>
-                <span data-counter-kind="blog" data-counter-id="${escapeAttribute(blog.id)}" data-counter-metric="pv">${metricText(blog.pv, "PV")}</span>
-                <span data-counter-kind="blog" data-counter-id="${escapeAttribute(blog.id)}" data-counter-metric="likes">${metricText(blog.likes, "いいね")}</span>
-              </div>
-              <h1>${escapeHtml(blog.title)}</h1>
-              <div class="article-body">${markdownLite(blog.body || blog.summary || "")}</div>
-              <div class="detail-actions">
-                <button class="like-button" type="button" data-like="${escapeAttribute(blog.id)}">いいね ${numberOrZero(blog.likes)}</button>
-                <button class="share-button" type="button" data-share="blog/${escapeAttribute(blog.id)}/" data-title="${escapeAttribute(blog.title)}">共有</button>
+            <div class="blog-detail-layout" data-static-detail="blog" data-static-id="${escapeAttribute(blog.id)}">
+              ${renderBlogToc(article.toc, `blog/${blog.id}/`)}
+              <div class="detail-shell blog-article">
+                <div class="blog-title-row">
+                  <a class="button back-button" href="blog/">一覧に戻る</a>
+                  <h1>${escapeHtml(blog.title)}</h1>
+                </div>
+                <div class="meta-row">
+                  <span>${formatDateText(blog.updatedAt)}</span>
+                  <span data-counter-kind="blog" data-counter-id="${escapeAttribute(blog.id)}" data-counter-metric="pv">${metricText(blog.pv, "PV")}</span>
+                  <span data-counter-kind="blog" data-counter-id="${escapeAttribute(blog.id)}" data-counter-metric="likes">${metricText(blog.likes, "いいね")}</span>
+                </div>
+                <div class="article-body">${article.html}</div>
+                <div class="detail-actions">
+                  <button class="like-button" type="button" data-like="${escapeAttribute(blog.id)}">いいね ${numberOrZero(blog.likes)}</button>
+                  <button class="share-button" type="button" data-share="blog/${escapeAttribute(blog.id)}/" data-title="${escapeAttribute(blog.title)}">共有</button>
+                </div>
               </div>
             </div>
           `;
@@ -439,7 +619,7 @@ function renderStaticWork(work) {
                     <span data-counter-kind="works" data-counter-id="${escapeAttribute(work.id)}" data-counter-metric="pv">${metricText(work.pv, "PV")}</span>
                   </div>
                   <h1>${escapeHtml(work.title)}</h1>
-                  <p class="article-body">${escapeHtml(work.description || work.summary || "")}</p>
+                  <div class="article-body">${markdownLite(work.description || work.summary || "")}</div>
                   <div class="detail-actions">
                     <button class="like-button" type="button" data-like="${escapeAttribute(work.id)}">いいね ${numberOrZero(work.likes)}</button>
                     <button class="share-button" type="button" data-share="works/${escapeAttribute(work.id)}/" data-title="${escapeAttribute(work.title)}">共有</button>
@@ -492,7 +672,32 @@ function renderMediaFrame(entry, fallbackTitle) {
   return `<img src="${escapeAttribute(entry.src)}" alt="${escapeAttribute(entry.title || fallbackTitle)}">`;
 }
 
-function markdownLite(text) {
+function renderMarkdownArticle(text) {
+  const toc = [];
+  return {
+    html: markdownLite(text, { toc, headingIds: new Map() }),
+    toc
+  };
+}
+
+function renderBlogToc(toc, basePath = "") {
+  const entries = toc.map((item) => `
+                  <a class="blog-toc-link level-${item.level}" href="${escapeAttribute(basePath)}#${escapeAttribute(item.id)}">${escapeHtml(item.title)}</a>
+                `).join("");
+  return `
+              <aside class="blog-toc" aria-labelledby="blog-toc-title">
+                <div class="blog-toc-head">
+                  <h2 id="blog-toc-title">目次</h2>
+                  <button class="blog-toc-toggle" type="button" data-toc-toggle aria-label="目次を折りたたむ" aria-expanded="true">☰</button>
+                </div>
+                <nav class="blog-toc-list" aria-label="記事内目次">
+                  ${entries || '<span class="blog-toc-empty">見出しがありません</span>'}
+                </nav>
+              </aside>
+            `;
+}
+
+function markdownLite(text, options = {}) {
   const lines = String(text ?? "").replace(/\r\n?/gu, "\n").split("\n");
   const html = [];
   let index = 0;
@@ -522,7 +727,11 @@ function markdownLite(text) {
     const heading = line.match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/u);
     if (heading) {
       const level = heading[1].length;
-      html.push(`<h${level}>${parseInlineMarkdown(heading[2])}</h${level}>`);
+      const title = plainTextForHeading(heading[2]);
+      const id = options.toc ? uniqueHeadingId(title, options.headingIds) : "";
+      if (options.toc) options.toc.push({ id, title, level });
+      const idAttribute = id ? ` id="${escapeAttribute(id)}"` : "";
+      html.push(`<h${level}${idAttribute}>${parseInlineMarkdown(heading[2])}</h${level}>`);
       index += 1;
       continue;
     }
@@ -720,6 +929,32 @@ function isMarkdownHtmlBlockStart(line) {
 
 function renderMarkdownHtmlBlock(lines) {
   return lines.map((line) => parseInlineMarkdown(line)).join("\n");
+}
+
+function uniqueHeadingId(title, headingIds = new Map()) {
+  const base = slugifyHeadingId(title);
+  const count = headingIds.get(base) || 0;
+  headingIds.set(base, count + 1);
+  return count ? `${base}-${count + 1}` : base;
+}
+
+function slugifyHeadingId(value) {
+  const slug = String(value ?? "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
+    .replace(/^-+|-+$/gu, "");
+  return slug || "section";
+}
+
+function plainTextForHeading(value) {
+  return String(value ?? "")
+    .replace(/!\[([^\]]*)\]\([^)]+\)/gu, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/gu, "$1")
+    .replace(/`([^`]+)`/gu, "$1")
+    .replace(/<\/?[a-z][a-z0-9-]*(?:\s+[^<>]*?)?\s*\/?>/giu, "")
+    .replace(/[#*_~]+/gu, "")
+    .trim() || "セクション";
 }
 
 function parseInlineMarkdown(value) {
